@@ -8,7 +8,7 @@ makedocs(;
     authors="Satoshi Terasaki <terasakisatoshi.math@gmail.com> and contributors",
     sitename="PkgBump.jl",
     format=Documenter.HTML(;
-        canonical="https://atelierarith.github.io/PkgBump.jl",
+        canonical="https://github.com/AtelierArith/PkgBump.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -18,6 +18,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/atelierarith/PkgBump.jl",
+    repo="https://github.com/AtelierArith/PkgBump.jl",
     devbranch="main",
 )
