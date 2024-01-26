@@ -35,3 +35,9 @@ $ julia --project -e 'using PkgBump; PkgBump.bumppatch()'
 ```
 
 This command updates the Julia project file (`Project.toml` or `JuliaProject.toml`), commits the changes, and pushes them to a remote repository named `pkgbump/bump-to-version-$(new_version)`, where `new_version` is the next patch version of the current version of `MyPkg.jl`. Note that there are other options such as `bumpminor` and `bumpmajor`.
+
+### References
+
+- [Pkg.jl](https://pkgdocs.julialang.org/v1/)
+- [LibGit2.jl](https://docs.julialang.org/en/v1/stdlib/LibGit2/)
+- [LocalRegistry.jl](https://github.com/GunnarFarneback/LocalRegistry.jl)
