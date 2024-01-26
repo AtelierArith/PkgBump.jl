@@ -3,6 +3,8 @@ module PkgBump
 import Pkg
 using LibGit2
 
+export bumpmajor, bumpminor, bumppatch
+
 """
     updateversion!(project::Pkg.Types.Project, project_file::AbstractString, mode::Symbol)
 
@@ -44,7 +46,7 @@ end
 
 Increment the major version of the given project and write the changes to the `project_file`.
 """
-function updatemajor!(project::Pkg.Types.Project, project_file)
+function updatemajor!(project::Pkg.Types.Project, project_file::AbstractString)
     updateversion!(project, project_file, :major)
 end
 
@@ -90,7 +92,8 @@ function bump(mode::Symbol)
     mode ∈ [:patch, :minor, :major] ||
         error("Expected one of [:patch, :minor, :major], actual $(mode)")
 
-    project_file = Base.active_project()
+    # ensure project_file should be a type of String
+    project_file::String = Base.active_project()
     project_dir = dirname(project_file)
     repo = LibGit2.GitRepo(project_dir)
     !LibGit2.isdirty(repo) || error("Registry directory is dirty. Stash or commit files.")
