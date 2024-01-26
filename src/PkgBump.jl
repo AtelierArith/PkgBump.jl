@@ -84,11 +84,11 @@ Update the major version of the project defined in `project_file`.
 updatemajor(project_file::AbstractString) = updateversion(project_file, :major)
 
 """
-    bump(mode::Symbol)
+    bump(mode::Symbol; commit=false, push=false)
 
 Bumps the version of the current active project according to `mode`, commits the change to a new branch, and pushes the branch to the remote repository.
 """
-function bump(mode::Symbol)
+function bump(mode::Symbol; commit::Bool=false, push::Bool=false)::Nothing
     mode ∈ [:patch, :minor, :major] ||
         error("Expected one of [:patch, :minor, :major], actual $(mode)")
 
@@ -96,46 +96,57 @@ function bump(mode::Symbol)
     project_file::String = Base.active_project()
     project_dir = dirname(project_file)
     repo = LibGit2.GitRepo(project_dir)
-    !LibGit2.isdirty(repo) || error("Registry directory is dirty. Stash or commit files.")
+
+    if commit
+        !LibGit2.isdirty(repo) || error("Registry directory is dirty. Stash or commit files.")
+    end
 
     project = Pkg.Types.read_project(project_file)
     current_version = project.version
 
     updateversion!(project, project_file, mode)
-    @info "Update version from $(current_version) to $(new_version)"
     new_version = project.version
+    @info "Update version from $(current_version) to $(new_version)"
 
-    @info "Commit changes..."
-    LibGit2.add!(repo, project_file)
-    branch = "pkgbump/bump-to-version-$(new_version)"
-    LibGit2.branch!(repo, branch)
-    LibGit2.commit(repo, "Bump to version $(new_version)")
+    if commit
+        @info "Commit changes..."
+        LibGit2.add!(repo, project_file)
+        branch = "pkgbump/bump-to-version-$(new_version)"
+        LibGit2.branch!(repo, branch)
+        LibGit2.commit(repo, "Bump to version $(new_version)")
+    else
+        @info "Skipped git commit ... since commit keyword is set to $(commit)"
+    end
 
-    @info "Push to remote..."
-    run(`git -C $(project_dir) push --set-upstream origin $branch`)
+    if push
+        @info "Push to remote..."
+        run(`git -C $(project_dir) push --set-upstream origin $branch`)
+    else
+        @info "Skipped git push ... since push keyword is set to $(push)"
+    end
 
     @info "Done"
 end
 
 """
-    bumppatch()
+    bumppatch(;kwargs)
 
 Bump the patch version of the current active project, commit, and push the changes.
 """
-bumppatch() = bump(:patch)
+bumppatch(;kwargs...) = bump(:patch; kwargs...)
 
 """
-    bumpminor()
+    bumpminor(;kwargs)
 
 Bump the minor version of the current active project, commit, and push the changes.
 """
-bumpminor() = bump(:minor)
+bumpminor(;kwargs...) = bump(:minor; kwargs...)
 
 """
-    bumpmajor()
+    bumpmajor(;kwargs)
 
 Bump the major version of the current active project, commit, and push the changes.
 """
-bumpmajor() = bump(:major)
+bumpmajor(;kwargs...) = bump(:major; kwargs...)
 
 end # module
