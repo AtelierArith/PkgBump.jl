@@ -88,7 +88,7 @@ updatemajor(project_file::AbstractString) = updateversion(project_file, :major)
 
 Bumps the version of the current active project according to `mode`, commits the change to a new branch, and pushes the branch to the remote repository.
 """
-function bump(mode::Symbol; commit::Bool=false, push::Bool=false)::Nothing
+function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
     mode ∈ [:patch, :minor, :major] ||
         error("Expected one of [:patch, :minor, :major], actual $(mode)")
 
