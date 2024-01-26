@@ -1,0 +1,3 @@
+[deps]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+PkgBump = "ee37f239-4ffc-46a1-86ce-10bebc6017f9"

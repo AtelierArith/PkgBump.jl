@@ -1,0 +1,17 @@
+name = "PkgBump"
+uuid = "ee37f239-4ffc-46a1-86ce-10bebc6017f9"
+authors = ["Satoshi Terasaki <terasakisatoshi.math@gmail.com> and contributors"]
+version = "1.2.1"
+
+[deps]
+LibGit2 = "76f85450-5226-5b5a-8eaa-529ad045b433"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+
+[compat]
+julia = "1.6.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

@@ -1,0 +1,27 @@
+version: '3'
+services:
+  julia:
+    image: pkgbumpjl
+    container_name: pkgbumpjl-julia
+    volumes:
+      - ./:/workspace/PkgBump.jl
+    working_dir: /workspace/PkgBump.jl
+    command: julia --project=/workspace/PkgBump.jl
+
+  shell:
+    image: pkgbumpjl
+    container_name: pkgbumpjl-julia
+    volumes:
+      - ./:/workspace/PkgBump.jl
+    working_dir: /workspace/PkgBump.jl
+    command: /bin/bash
+
+  web:
+    image: pkgbumpjl
+    container_name: pkgbumpjl-packagedocs
+    volumes:
+      - ./:/workspace/PkgBump.jl
+    working_dir: /workspace/PkgBump.jl
+    ports:
+      - "8000:8000"
+    command: make web
