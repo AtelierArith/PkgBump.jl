@@ -1,2 +1,29 @@
 # PkgBump [![Build Status](https://github.com/atelierarith/PkgBump.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/atelierarith/PkgBump.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://atelierarith.github.io/PkgBump.jl/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://atelierarith.github.io/PkgBump.jl/dev/)
 # PkgBump.jl
+
+Automatically increments the version in a Julia Project file.
+
+## How to Use
+
+### Installing PkgBump.jl in a Shared Environment
+
+```console
+$ git clone https://github.com/AtelierArith/PkgBump.jl
+$ ls
+PkgBump.jl
+$ julia -e 'using Pkg; Pkg.activate(); Pkg.develop(path="PkgBump.jl")'
+```
+
+### Updating Your Julia Project File
+
+To create a release for `MyPkg.jl` located at `path/to/your/MyPkg.jl`, execute the following commands:
+
+```console
+$ cd path/to/your/MyPkg.jl
+$ ls # Verify the presence of Project.toml or JuliaProject.toml
+Output: Project.toml src test ...
+$ julia --project -e 'using PkgBump; PkgBump.bumppatch()'
+```
+
+This command updates the Julia project file (`Project.toml` or `JuliaProject.toml`), commits the changes, and pushes them to a remote repository named `pkgbump/bump-to-version-$(new_version)`, where `new_version` is the next patch version of the current version of `MyPkg.jl`. Note that there are other options such as `bumpminor` and `bumpmajor`.
+
