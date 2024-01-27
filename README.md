@@ -6,8 +6,8 @@ Automatically increments the version in a Julia Project file. Package developers
 ```julia
 # Roughly speaking
 bumppatch: v"x.y.z" -> v"x.y.(z+1)"
-bumpminor: v"x.y.z" -> v"x.(y+1).z"
-bumpmajor: v"x.y.z" -> v"(x+1).y.z"
+bumpminor: v"x.y.z" -> v"x.(y+1).0"
+bumpmajor: v"x.y.z" -> v"(x+1).0.0"
 ```
 
 Internally, we use the `Base.nextpatch`, `Base.nextminor`, `Base.nextmajor` functions respectively.
