@@ -84,7 +84,7 @@ Update the major version of the project defined in `project_file`.
 updatemajor(project_file::AbstractString) = updateversion(project_file, :major)
 
 """
-    bump(mode::Symbol; commit=false, push=false)
+    bump(mode::Symbol; commit=true, push=true)
 
 Bumps the version of the current active project according to `mode`, commits the change to a new branch, and pushes the branch to the remote repository.
 """
