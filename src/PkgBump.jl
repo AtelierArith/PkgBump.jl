@@ -96,6 +96,7 @@ function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
     project_file = Base.active_project()::String
     project_dir = dirname(project_file)
     repo = LibGit2.GitRepo(project_dir)
+    current_branch = LibGit2.branch(repo)
 
     if commit
         !LibGit2.isdirty(repo) || error("Registry directory is dirty. Stash or commit files.")
@@ -108,21 +109,33 @@ function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
     new_version = project.version
     @info "Update version from $(current_version) to $(new_version)"
 
-    if commit
-        @info "Commit changes..."
-        LibGit2.add!(repo, project_file)
-        branch = "pkgbump/bump-to-version-$(new_version)"
-        LibGit2.branch!(repo, branch)
-        LibGit2.commit(repo, "Bump to version $(new_version)")
-    else
-        @info "Skipped git commit ... since commit keyword is set to $(commit)"
-    end
+    try
+        if commit
+            branch = "pkgbump/bump-to-version-$(new_version)"
+            @info "Switch branch from $(current_branch) to $branch"
+            LibGit2.branch!(repo, branch)
 
-    if push
-        @info "Push to remote..."
-        run(`git -C $(project_dir) push --set-upstream origin $branch`)
-    else
-        @info "Skipped git push ... since push keyword is set to $(push)"
+            target_file = relpath(Base.active_project(), LibGit2.path(repo))
+            @info "Stage $(target_file)"
+            LibGit2.add!(repo, target_file)
+
+            @info "Commit changes..."
+            LibGit2.commit(repo, "Bump to version $(new_version)")
+        else
+            @info "Skipped git commit ... since commit keyword is set to $(commit)"
+        end
+
+        if push
+            @info "Push to remote..."
+            run(`git -C $(project_dir) push --set-upstream origin $branch`)
+        else
+            @info "Skipped git push ... since push keyword is set to $(push)"
+        end
+    catch e
+        println("Failed to commit or push due to error $e")
+    finally    
+        @info "Switch back to $(current_branch)"
+        LibGit2.branch!(repo, curretn_branch)
     end
 
     @info "Done"
