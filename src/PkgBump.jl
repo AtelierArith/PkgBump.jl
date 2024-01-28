@@ -17,9 +17,9 @@ function updateversion!(
     mode::Symbol,
 )
     isnothing(project.version) && (project.version = v"0.1.0")
-    mode === :patch && (project.version = Base.nextpatch(project.version))
-    mode === :minor && (project.version = Base.nextminor(project.version))
-    mode === :major && (project.version = Base.nextmajor(project.version))
+    mode === :patch && (project.version = Base.nextpatch(project.version::VersionNumber))
+    mode === :minor && (project.version = Base.nextminor(project.version::VersionNumber))
+    mode === :major && (project.version = Base.nextmajor(project.version::VersionNumber))
     Pkg.Types.write_project(project, project_file)
 end
 
