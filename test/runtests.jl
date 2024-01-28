@@ -5,12 +5,14 @@ using JET
 
 using PkgBump
 
-@testset "Aqua" begin
+@testset "Code quality (Aqua.jl)" begin
     Aqua.test_all(PkgBump, deps_compat=false)
 end
 
-@testset "JET" begin
-    JET.report_package(PkgBump)
+if VERSION >= v"1.9"
+    @testset "Code linting (JET.jl)" begin
+        JET.test_package(PkgBump; target_defined_modules=true)
+    end
 end
 
 @testset "PkgBump.jl" begin

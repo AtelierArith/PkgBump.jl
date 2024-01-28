@@ -115,7 +115,7 @@ function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
             @info "Switch branch from $(current_branch) to $branch"
             LibGit2.branch!(repo, branch)
 
-            target_file = relpath(Base.active_project(), LibGit2.path(repo))
+            target_file = relpath(project_file, LibGit2.path(repo))
             @info "Stage $(target_file)"
             LibGit2.add!(repo, target_file)
 
