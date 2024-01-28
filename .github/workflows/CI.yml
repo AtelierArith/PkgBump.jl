@@ -28,6 +28,7 @@ jobs:
         include:
           - version: 'nightly'
             os: ubuntu-latest
+            arch: x64
             experimental: true
         os:
           - ubuntu-latest
