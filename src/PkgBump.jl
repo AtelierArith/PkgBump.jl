@@ -135,7 +135,7 @@ function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
         println("Failed to commit or push due to error $e")
     finally    
         @info "Switch back to $(current_branch)"
-        LibGit2.branch!(repo, curretn_branch)
+        LibGit2.branch!(repo, current_branch)
     end
 
     @info "Done"
