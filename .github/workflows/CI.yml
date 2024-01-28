@@ -27,6 +27,7 @@ jobs:
         experimental: [false]
         include:
           - version: 'nightly'
+            os: ubuntu-latest
             experimental: true
         os:
           - ubuntu-latest
