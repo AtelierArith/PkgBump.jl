@@ -93,7 +93,7 @@ function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
         error("Expected one of [:patch, :minor, :major], actual $(mode)")
 
     # ensure project_file should be a type of String
-    project_file::String = Base.active_project()
+    project_file = Base.active_project()::String
     project_dir = dirname(project_file)
     repo = LibGit2.GitRepo(project_dir)
 
