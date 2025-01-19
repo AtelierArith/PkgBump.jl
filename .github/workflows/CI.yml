@@ -24,12 +24,6 @@ jobs:
       fail-fast: false
       matrix:
         version: ['lts', '1']
-        experimental: [false]
-        include:
-          - version: 'nightly'
-            os: ubuntu-latest
-            arch: x64
-            experimental: true
         os:
           - ubuntu-latest
         arch:
