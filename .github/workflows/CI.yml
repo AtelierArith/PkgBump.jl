@@ -16,31 +16,24 @@ jobs:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
-    continue-on-error: ${{ matrix.experimental }}
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
       contents: read
     strategy:
       fail-fast: false
       matrix:
-        version: ['1.6', '1.10', '1']
-        experimental: [false]
-        include:
-          - version: 'nightly'
-            os: ubuntu-latest
-            arch: x64
-            experimental: true
+        version: ['lts', '1']
         os:
           - ubuntu-latest
         arch:
           - x64
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
   docs:
@@ -52,10 +45,10 @@ jobs:
       statuses: write
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: '1'
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
