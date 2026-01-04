@@ -110,8 +110,8 @@ function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
     @info "Update version from $(current_version) to $(new_version)"
 
     try
+        branch = "pkgbump/bump-to-version-$(new_version)"
         if commit
-            branch = "pkgbump/bump-to-version-$(new_version)"
             @info "Switch branch from $(current_branch) to $branch"
             LibGit2.branch!(repo, branch)
 
@@ -133,7 +133,7 @@ function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
         end
     catch e
         println("Failed to commit or push due to error $e")
-    finally    
+    finally
         @info "Switch back to $(current_branch)"
         LibGit2.branch!(repo, current_branch)
     end
