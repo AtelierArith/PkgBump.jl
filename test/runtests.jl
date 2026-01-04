@@ -9,9 +9,9 @@ using PkgBump
     Aqua.test_all(PkgBump, deps_compat=false)
 end
 
-if VERSION >= v"1.9"
+if VERSION >= v"1.10"
     @testset "Code linting (JET.jl)" begin
-        JET.test_package(PkgBump; target_defined_modules=true)
+        JET.test_package(PkgBump; target_modules=(PkgBump,))
     end
 end
 
