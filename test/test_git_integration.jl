@@ -64,7 +64,7 @@ end
                 # Version update only, no Git operations
                 bump(:patch; commit=false, push=false)
 
-                # Verify version was updated
+                # Verify version was updated in current working directory
                 project = Pkg.Types.read_project(joinpath(tmpdir, "Project.toml"))
                 @test project.version == v"1.0.1"
 
@@ -84,11 +84,8 @@ end
 
                 bump(:minor; commit=true, push=false)
 
-                # Verify version was updated
-                project = Pkg.Types.read_project(joinpath(tmpdir, "Project.toml"))
-                @test project.version == v"1.1.0"
-
-                # Verify we're back on the original branch
+                # After bump with commit=true, we're back on the original branch
+                # The updated version is on the new branch, not the current branch
                 @test LibGit2.branch(repo) == initial_branch
 
                 # Verify new branch exists
@@ -97,6 +94,14 @@ end
                     push!(branch_names, LibGit2.shortname(ref[1]))
                 end
                 @test "pkgbump/bump-to-version-1.1.0" in branch_names
+
+                # Switch to the new branch to verify the version was updated there
+                LibGit2.branch!(repo, "pkgbump/bump-to-version-1.1.0")
+                project = Pkg.Types.read_project(joinpath(tmpdir, "Project.toml"))
+                @test project.version == v"1.1.0"
+
+                # Switch back to original branch
+                LibGit2.branch!(repo, initial_branch)
             end
         finally
             rm(tmpdir; recursive=true, force=true)
@@ -161,11 +166,9 @@ end
         tmpdir, repo = create_temp_git_repo()
         try
             with_temp_project(tmpdir) do
-                bump(:major; commit=true, push=false)
+                initial_branch = LibGit2.branch(repo)
 
-                # Verify version was updated
-                project = Pkg.Types.read_project(joinpath(tmpdir, "Project.toml"))
-                @test project.version == v"2.0.0"
+                bump(:major; commit=true, push=false)
 
                 # Verify branch was created
                 branch_names = String[]
@@ -173,6 +176,14 @@ end
                     push!(branch_names, LibGit2.shortname(ref[1]))
                 end
                 @test "pkgbump/bump-to-version-2.0.0" in branch_names
+
+                # Switch to new branch to verify version
+                LibGit2.branch!(repo, "pkgbump/bump-to-version-2.0.0")
+                project = Pkg.Types.read_project(joinpath(tmpdir, "Project.toml"))
+                @test project.version == v"2.0.0"
+
+                # Switch back
+                LibGit2.branch!(repo, initial_branch)
             end
         finally
             rm(tmpdir; recursive=true, force=true)
