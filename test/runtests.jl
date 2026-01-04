@@ -16,5 +16,7 @@ if VERSION >= v"1.10"
 end
 
 @testset "PkgBump.jl" begin
-    # Write your tests here.
+    include("test_version_update.jl")
+    include("test_error_handling.jl")
+    include("test_git_integration.jl")
 end
