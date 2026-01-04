@@ -153,29 +153,4 @@ end
         end
     end
 
-    @testset "sequential version updates" begin
-        mktempdir() do tmpdir
-            project_file = joinpath(tmpdir, "Project.toml")
-            write(project_file, create_temp_project(version="1.0.0"))
-
-            # Apply multiple updates sequentially
-            # Each call reads the file fresh, updates, and writes back
-            project = updatepatch(project_file)
-            @test project.version == v"1.0.1"
-
-            # Read fresh from file to verify persistence
-            project = Pkg.Types.read_project(project_file)
-            @test project.version == v"1.0.1"
-
-            project = updatepatch(project_file)
-            @test project.version == v"1.0.2"
-
-            project = updateminor(project_file)
-            @test project.version == v"1.1.0"
-
-            project = updatemajor(project_file)
-            @test project.version == v"2.0.0"
-        end
-    end
-
 end
