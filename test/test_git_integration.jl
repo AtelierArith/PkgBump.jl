@@ -25,6 +25,12 @@ function create_temp_git_repo(; version="1.0.0")
     # Initialize Git repository
     repo = LibGit2.init(tmpdir)
 
+    # Set local git config for CI environments where global config may not exist
+    LibGit2.with(LibGit2.GitConfig, repo) do cfg
+        LibGit2.set!(cfg, "user.name", "Test User")
+        LibGit2.set!(cfg, "user.email", "test@example.com")
+    end
+
     # Initial commit
     LibGit2.add!(repo, "Project.toml")
     LibGit2.add!(repo, "src/TestPackage.jl")

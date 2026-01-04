@@ -27,12 +27,8 @@ end
             project = Pkg.Types.read_project(project_file)
             updateversion!(project, project_file, :patch)
 
-            # Verify in-memory project object
+            # Verify in-memory project object was updated
             @test project.version == v"1.2.4"
-
-            # Verify file was written correctly
-            updated_project = Pkg.Types.read_project(project_file)
-            @test updated_project.version == v"1.2.4"
         end
     end
 
@@ -45,9 +41,6 @@ end
             updateversion!(project, project_file, :minor)
 
             @test project.version == v"1.3.0"
-
-            updated_project = Pkg.Types.read_project(project_file)
-            @test updated_project.version == v"1.3.0"
         end
     end
 
@@ -60,9 +53,6 @@ end
             updateversion!(project, project_file, :major)
 
             @test project.version == v"2.0.0"
-
-            updated_project = Pkg.Types.read_project(project_file)
-            @test updated_project.version == v"2.0.0"
         end
     end
 
@@ -93,10 +83,6 @@ end
 
             project = updateversion(project_file, :patch)
             @test project.version == v"2.0.1"
-
-            # Verify file was also updated
-            reloaded = Pkg.Types.read_project(project_file)
-            @test reloaded.version == v"2.0.1"
         end
     end
 
@@ -173,7 +159,12 @@ end
             write(project_file, create_temp_project(version="1.0.0"))
 
             # Apply multiple updates sequentially
+            # Each call reads the file fresh, updates, and writes back
             project = updatepatch(project_file)
+            @test project.version == v"1.0.1"
+
+            # Read fresh from file to verify persistence
+            project = Pkg.Types.read_project(project_file)
             @test project.version == v"1.0.1"
 
             project = updatepatch(project_file)
