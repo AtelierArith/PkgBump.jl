@@ -19,4 +19,5 @@ end
     include("test_version_update.jl")
     include("test_error_handling.jl")
     include("test_git_integration.jl")
+    include("test_register.jl")
 end
