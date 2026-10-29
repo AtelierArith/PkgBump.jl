@@ -19,7 +19,7 @@ function with_register_fixture(f; state="MERGED", sha="abc123", fail="", base=no
             printf '%s\\n' "\$*" >> "\$GH_TEST_LOG"
             if [ -n "\$GH_TEST_FAIL" ] && [ "\$1 \$2" = "\$GH_TEST_FAIL" ]; then exit 1; fi
             case "\$1 \$2" in
-              'repo view') case "\$*" in *defaultBranchRef*) echo "\$GH_TEST_BASE" ;; *) echo owner/repo ;; esac ;;
+              'repo view') case "\$*" in *--repo*) exit 2 ;; *defaultBranchRef*) echo "\$GH_TEST_BASE" ;; *) echo owner/repo ;; esac ;;
               'pr create') echo https://github.com/owner/repo/pull/1 ;;
               'pr view') case "\$*" in *mergeCommit*) echo "\$GH_TEST_SHA" ;; *"--json url"*) echo https://github.com/owner/repo/pull/1 ;; *) echo "\$GH_TEST_STATE" ;; esac ;;
             esac
@@ -45,7 +45,7 @@ end
                                              (registerminor, "1.1.0", :merge),
                                              (registermajor, "2.0.0", :rebase))
             with_register_fixture() do dir, log
-                @test register(; poll_interval=0.01, timeout=1, merge_method=method) ==
+                @test register(; poll_interval=0.01, timeout=1, merge_method=method, release_notes="Breaking: migration details.") ==
                       "https://github.com/owner/repo/pull/1"
                 calls = read(log, String)
                 @test occursin("pr create --head pkgbump/bump-to-version-$version", calls)
@@ -53,6 +53,28 @@ end
                 @test occursin("api repos/owner/repo/commits/abc123/comments -f body=@JuliaRegistrator register", calls)
                 ref = "pkgbump/bump-to-version-$(version):Project.toml"
                 @test occursin("version = \"$version\"", read(`git -C $dir show $ref`, String))
+            end
+        end
+    end
+
+    @testset "Release notes are sent to Registrator" begin
+        with_register_fixture() do _, log
+            registerminor(; poll_interval=0.01, timeout=1, release_notes="Breaking: upgrade dependency.\nSee migration guide.")
+            calls = read(log, String)
+            @test occursin("Release notes:\n\nBreaking: upgrade dependency.\nSee migration guide.", calls)
+        end
+    end
+
+    @testset "Minor and major releases require nonblank notes" begin
+        for register in (registerminor, registermajor), notes in (nothing, "", "  \n ")
+            with_register_fixture() do dir, log
+                if isnothing(notes)
+                    @test_throws ArgumentError register()
+                else
+                    @test_throws ArgumentError register(; release_notes=notes)
+                end
+                @test !isfile(log)
+                @test Pkg.Types.read_project(joinpath(dir, "Project.toml")).version == v"1.0.0"
             end
         end
     end

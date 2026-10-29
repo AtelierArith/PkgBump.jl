@@ -2,7 +2,10 @@
 gh_output(dir, args...) = strip(read(Cmd(`gh $args`; dir=dir), String))
 gh_run(dir, args...) = run(Cmd(`gh $args`; dir=dir))
 
-function register(mode; poll_interval::Real=10, timeout::Real=3600, merge_method::Symbol=:squash)
+function register(mode; poll_interval::Real=10, timeout::Real=3600, merge_method::Symbol=:squash,
+                  release_notes::AbstractString="")
+    mode in (:minor, :major) && isempty(strip(release_notes)) &&
+        throw(ArgumentError("release_notes must be nonempty for minor and major releases"))
     poll_interval > 0 || throw(ArgumentError("poll_interval must be positive"))
     timeout > 0 || throw(ArgumentError("timeout must be positive"))
     merge_method in (:squash, :merge, :rebase) ||
@@ -10,7 +13,7 @@ function register(mode; poll_interval::Real=10, timeout::Real=3600, merge_method
     project_file = Base.active_project()::String
     dir = dirname(project_file)
     repo = gh_output(dir, "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner")
-    base = gh_output(dir, "repo", "view", "--repo", repo, "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name")
+    base = gh_output(dir, "repo", "view", repo, "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name")
     current = LibGit2.branch(LibGit2.GitRepo(dir))
     current == base || error("Check out the default branch $base before registering (current: $current)")
     project = Pkg.Types.read_project(project_file)
@@ -27,7 +30,9 @@ function register(mode; poll_interval::Real=10, timeout::Real=3600, merge_method
         if state == "MERGED"
             sha = gh_output(dir, "pr", "view", pr, "--repo", repo, "--json", "mergeCommit", "--jq", ".mergeCommit.oid")
             isempty(sha) && error("Merged PR $pr has no merge commit SHA")
-            gh_run(dir, "api", "repos/$repo/commits/$sha/comments", "-f", "body=@JuliaRegistrator register")
+            body = "@JuliaRegistrator register"
+            isempty(strip(release_notes)) || (body *= "\n\nRelease notes:\n\n" * release_notes)
+            gh_run(dir, "api", "repos/$repo/commits/$sha/comments", "-f", "body=$body")
             @info "Registrator requested" pr sha
             return pr
         elseif state != "OPEN"
@@ -39,18 +44,19 @@ function register(mode; poll_interval::Real=10, timeout::Real=3600, merge_method
 end
 
 """
-    registerpatch(; poll_interval=10, timeout=3600, merge_method=:squash)
+    registerpatch(; poll_interval=10, timeout=3600, merge_method=:squash, release_notes="")
 
 Bump the active package's patch version, create and automatically merge a PR,
 then request registration on its merge commit using the authenticated `gh` user.
 Returns the PR URL. Requires a clean checkout of the default branch, `gh`
 authentication, Registrator, and auto-merge enabled on the repository. If the
 wait times out, the PR may still merge and registration must be requested manually.
+Use `release_notes` to include notes in the Registrator request.
 """
 registerpatch(; kwargs...) = register(:patch; kwargs...)
 
-"""Like [`registerpatch`](@ref), but bump the minor version."""
+"""Like [`registerpatch`](@ref), but bump the minor version. Nonempty `release_notes` are required."""
 registerminor(; kwargs...) = register(:minor; kwargs...)
 
-"""Like [`registerpatch`](@ref), but bump the major version."""
+"""Like [`registerpatch`](@ref), but bump the major version. Nonempty `release_notes` are required."""
 registermajor(; kwargs...) = register(:major; kwargs...)
