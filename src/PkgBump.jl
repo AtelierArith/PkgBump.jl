@@ -4,6 +4,7 @@ import Pkg
 using LibGit2
 
 export bumpmajor, bumpminor, bumppatch
+export registermajor, registerminor, registerpatch
 
 """
     updateversion!(project::Pkg.Types.Project, project_file::AbstractString, mode::Symbol)
@@ -86,7 +87,7 @@ updatemajor(project_file::AbstractString) = updateversion(project_file, :major)
 """
     bump(mode::Symbol; commit=true, push=true)
 
-Bumps the version of the current active project according to `mode`, commits the change to a new branch, and pushes the branch to the remote repository.
+Bumps the version of the current active project according to `mode`, commits the change to a new branch, pushes the branch to the remote repository, and creates a pull request with `gh`.
 """
 function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
     mode ∈ [:patch, :minor, :major] ||
@@ -105,17 +106,21 @@ function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
     project = Pkg.Types.read_project(project_file)
     current_version = project.version
 
-    updateversion!(project, project_file, mode)
-    new_version = project.version
-    @info "Update version from $(current_version) to $(new_version)"
-
+    old_version = something(current_version, v"0.1.0")::VersionNumber
+    new_version = mode === :patch ? Base.nextpatch(old_version) :
+                  mode === :minor ? Base.nextminor(old_version) : Base.nextmajor(old_version)
+    branch = "pkgbump/bump-to-version-$(new_version)"
     try
-        branch = "pkgbump/bump-to-version-$(new_version)"
         if commit
             @info "Switch branch from $(current_branch) to $branch"
             LibGit2.branch!(repo, branch)
+        end
+        updateversion!(project, project_file, mode)
+        @info "Update version from $(current_version) to $(new_version)"
+        if commit
 
-            target_file = relpath(project_file, LibGit2.path(repo))
+            repo_root = strip(read(`git -C $project_dir rev-parse --show-toplevel`, String))
+            target_file = relpath(realpath(project_file), realpath(repo_root))
             @info "Stage $(target_file)"
             LibGit2.add!(repo, target_file)
 
@@ -128,11 +133,12 @@ function bump(mode::Symbol; commit::Bool=true, push::Bool=true)::Nothing
         if push
             @info "Push to remote..."
             run(`git -C $(project_dir) push --set-upstream origin $branch`)
+            gh_run(project_dir, "pr", "create", "--head", branch,
+                   "--title", "Bump to version $new_version",
+                   "--body", "Bump package version to $new_version.")
         else
             @info "Skipped git push ... since push keyword is set to $(push)"
         end
-    catch e
-        println("Failed to commit or push due to error $e")
     finally
         @info "Switch back to $(current_branch)"
         LibGit2.branch!(repo, current_branch)
@@ -144,22 +150,24 @@ end
 """
     bumppatch(;kwargs)
 
-Bump the patch version of the current active project, commit, and push the changes.
+Bump the patch version of the current active project, commit and push the changes, and create a pull request.
 """
 bumppatch(;kwargs...) = bump(:patch; kwargs...)
 
 """
     bumpminor(;kwargs)
 
-Bump the minor version of the current active project, commit, and push the changes.
+Bump the minor version of the current active project, commit and push the changes, and create a pull request.
 """
 bumpminor(;kwargs...) = bump(:minor; kwargs...)
 
 """
     bumpmajor(;kwargs)
 
-Bump the major version of the current active project, commit, and push the changes.
+Bump the major version of the current active project, commit and push the changes, and create a pull request.
 """
 bumpmajor(;kwargs...) = bump(:major; kwargs...)
+
+include("register.jl")
 
 end # module
