@@ -53,3 +53,12 @@ is squash; pass `merge_method=:merge` or `:rebase` if needed. The default wait
 is one hour, adjustable with `timeout` and `poll_interval` (seconds). If the
 wait times out or is interrupted, the PR can still merge; request Registrator
 manually on its merge commit.
+
+`registerminor` and `registermajor` require nonempty release notes. For a breaking
+release, describe the breaking changes and how to upgrade:
+
+```julia
+registerminor(; release_notes="Breaking: describe the change and how to upgrade.")
+```
+
+Release notes are optional for `registerpatch`.

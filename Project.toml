@@ -1,6 +1,6 @@
 name = "PkgBump"
 uuid = "ee37f239-4ffc-46a1-86ce-10bebc6017f9"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Satoshi Terasaki <terasakisatoshi.math@gmail.com> and contributors"]
 
 [deps]
