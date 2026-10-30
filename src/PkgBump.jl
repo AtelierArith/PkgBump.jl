@@ -2,9 +2,10 @@ module PkgBump
 
 import Pkg
 using LibGit2
+using Base64: base64decode
 
 export bumpmajor, bumpminor, bumppatch
-export registermajor, registerminor, registerpatch
+export registermajor, registerminor, registerpatch, registrationstatus
 
 """
     updateversion!(project::Pkg.Types.Project, project_file::AbstractString, mode::Symbol)
