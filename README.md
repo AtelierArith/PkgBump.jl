@@ -62,3 +62,26 @@ registerminor(; release_notes="Breaking: describe the change and how to upgrade.
 ```
 
 Release notes are optional for `registerpatch`.
+
+After posting, PkgBump logs the request comment URL and waits up to two minutes
+for Registrator's reply. It then displays the reply URL and, when confirmed by
+Registrator, the registration PR URL in General. Creation of a registration PR
+does not mean it has merged. The version-bump PR URL remains the return value.
+
+Use `registrator_timeout` to adjust the reply wait independently of the merge
+wait (`timeout`). Set it to zero to check once. If no reply arrives or checking
+fails, PkgBump warns and retains the request URL in the log. **Do not run
+`registerpatch()` again to check a pending request**, as that bumps another version.
+Instead, use the logged URL to check again without changing the package:
+
+```julia
+status = registrationstatus("https://github.com/OWNER/REPO/commit/SHA#commitcomment-ID")
+status.comment_url  # the original request
+status.reply_url    # Registrator's response, or nothing
+status.registry_pr  # the registration PR, or nothing
+status.body         # full reply, including registration errors
+```
+
+`status.status` is `:pending` (no reply), `:created` (registry PR confirmed), or
+`:replied` (another response that needs review). This lookup works from any
+directory. To wait again, use `registrationstatus(url; timeout=120)`.
