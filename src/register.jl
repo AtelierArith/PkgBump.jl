@@ -75,7 +75,7 @@ function registrationstatus(comment_url::AbstractString; poll_interval::Real=10,
 end
 
 function register(mode; poll_interval::Real=10, timeout::Real=3600,
-    merge_method::Symbol=:squash,
+    merge_method::Symbol=:merge,
     release_notes::AbstractString="", registrator_timeout::Real=120)
     mode in (:minor, :major) && isempty(strip(release_notes)) &&
         throw(ArgumentError("release_notes must be nonempty for minor and major releases"))
